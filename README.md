@@ -1,0 +1,1 @@
+The program will have 2 instructions. First, we need to set up the game. We need to save who is playing it and create a board to play on. Then, the players take turns until there is a winner or a tie.
