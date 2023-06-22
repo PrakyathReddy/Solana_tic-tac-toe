@@ -1,18 +1,22 @@
-use anchor_lang::prelude::*;
-use num_derive::*;
-use num_traits::*;
+use anchor_lang::prelude::*; // imports all items from the 'prelude' module of the 'anchor_lang' crate
+use num_derive::*; // this crate provides procedural macros to derive numeric traits in Rust like FromPrimitive and ToPrimitive
+use num_traits::*; // this crate provides a collection of numeric traits that describe properties of primitive numeric types
 
-use crate::program::TicTacToeAnchor;
+use crate::program::TicTacToeAnchor; // is a path pointing to the 'TicTacToeAchor' item inside the program module of the current state
 
-declare_id!("BwAT2NVQuxS4wuvzSd4MjPUbxMZm4yv791C7E62yYJUp");
 
-#[program]
-pub mod tic_tac_toe_anchor {
-    use super::*;
+declare_id!("BwAT2NVQuxS4wuvzSd4MjPUbxMZm4yv791C7E62yYJUp"); // this macro defines the unique program id of a given solana program. Anchor provides a local development environment where it automatically handles the program ID for you, so you don't have to worry about it.
+
+#[program] // this anchor attribute is a procedural macro that denotes the program's main entry point. similar to main function. Under this attribute u define fn's that represent the different instructions or operations that our Solana program can handle.
+pub mod tic_tac_toe_anchor { // modules in Rust are used to organize code into namespaces
+    use super::*; // brings all public items from the parent module into scope
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         Ok(())
-    }
+    } // initialize fn is an instruction handler for a solana program written using anchor. 
+    // ctx is a struct that contains the accounts and client information involved in the transaction. 'Context' struct is a generic type provided by anchor, and the initialize type inside the brackets is defined elsewhere in the program. This initialize type represents the specific accounts that the 'initialize' instruction expects.
+    // Result is a function that return a result type - success (Ok) or failure (Err). If there was an error, the funtion will return an 'Err' variant that contains info about what went wrong
+    // Ok(()) - this is the body of the function. It simply returns 'Ok(())' indicating that this function always succeeds. 
 }
 
 #[derive(Accounts)]
