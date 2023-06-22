@@ -19,20 +19,26 @@ pub mod tic_tac_toe_anchor { // modules in Rust are used to organize code into n
     // Ok(()) - this is the body of the function. It simply returns 'Ok(())' indicating that this function always succeeds. 
 }
 
-#[derive(Accounts)]
+#[derive(Accounts)] // this attribute defines a struct that represents the accounts a given instruction expects
+// the derive keyword in Rust is used to automatically create code based on the data type definitions. it is used in conjunction with traits to add default implementations for those traits.
+// The accounts trait in Anchor provides functionalities for parsing and validating solana accounts, which are passed to the instruction.
 pub struct Initialize {}
 
 
-#[account]
-pub struct Game {
-    players: [Pubkey; 2],
-    turn: u8,
-    board: [[Option<Sign>; 3]; 3], 
-    state: GameState,
+#[account] // an attribute macro that provides information about how to use a specific struct as an account in the program. This means instances of Game will be stored in Solana accounts. And every new game requires a new account.
+pub struct Game { // represents a game state in a solana program
+    players: [Pubkey; 2], // holds public keys of the 2 players involved in the game
+    turn: u8, // represents the current player's turn - either 0 or 1
+    board: [[Option<Sign>; 3]; 3], // a 3x3 matrix that represents game board. Each cell on the board holds an Option<Sign> - either holds a sign (X or O) or can be empty (None)
+    state: GameState, // represents overall state of the game. the exact values it can take on is mentioned below in GameState enum
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
-pub enum GameState {
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)] 
+// First 2 tells Rust to automatically generate code for serializing and deserializing 'GameState' instances. This is because data needs to be serialized to be stored in a Solana account, and then deserialized to be read and used in the program
+// Clone tells Rust to generate a '.clone()' method for 'GameState' instances. This method will create a copy of 'GameState'
+// PartialEq allows GameState instances to be compared for equality using '==' operator
+// Eq - This trait indicates that all comparisions of 'GameState' instances are reflexive, symmetric and transitive, which are the conditions needed to define a today equivalence relation.
+pub enum GameState { // represents the possible states that a game could be in
     Active,
     Tie,
     Won { winner: Pubkey },
@@ -41,9 +47,9 @@ pub enum GameState {
 #[derive(
     AnchorSerialize,
     AnchorDeserialize,
-    FromPrimitive,
-    ToPrimitive,
-    Copy,
+    FromPrimitive, // allows converting instances into primitive types
+    ToPrimitive, // vice-versa of above
+    Copy, // this trait means that this type will be 'copy'able
     Clone,
     PartialEq,
     Eq
