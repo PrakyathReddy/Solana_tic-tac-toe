@@ -49,6 +49,21 @@ pub enum Sign {
     O,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct Tile {
+    row: u8,
+    column: u8,
+}
+
+#[error_code]
+pub enum TicTacToeError {
+    TileOutOfBounds,
+    TileAlreadySet,
+    GameAlreadyOver,
+    NotPlayersTurn,
+    GameAlreadyStarted,
+}
+
 impl Game {
     pub const MAXIMUM_SIZE: usize = (32 * 2) + 1 + (9 * (1 + 1)) + (32 + 1);
 
@@ -71,7 +86,7 @@ impl Game {
         self.players[self.current_player_index()]
     }
 
-    pub fn play(&mut self, tile: &tile) -> Result<()> {
+    pub fn play(&mut self, tile: &Tile) -> Result<()> {
         require!(self.is_active(), TicTacToeError::GameAlreadyOver);
 
         match tile {
