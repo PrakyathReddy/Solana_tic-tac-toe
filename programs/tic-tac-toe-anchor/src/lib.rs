@@ -22,7 +22,14 @@ pub mod tic_tac_toe_anchor { // modules in Rust are used to organize code into n
 #[derive(Accounts)] // this attribute defines a struct that represents the accounts a given instruction expects
 // the derive keyword in Rust is used to automatically create code based on the data type definitions. it is used in conjunction with traits to add default implementations for those traits.
 // The accounts trait in Anchor provides functionalities for parsing and validating solana accounts, which are passed to the instruction.
-pub struct Initialize {}
+pub struct SetupGame<'info> {
+    #[account(init, payer = player_one, space = 8 + Game::MAXIMUM_SIZE)]
+    pub game: Account<'info, Game>,
+    #[account(mut)]
+    pub player_one: Signer<'info>,
+    pub system_program: Program<'info, System>
+} // it can be used to initialize a new Game account
+// Game field will contain the address of the newly created account
 
 
 #[account] // an attribute macro that provides information about how to use a specific struct as an account in the program. This means instances of Game will be stored in Solana accounts. And every new game requires a new account.
@@ -63,9 +70,9 @@ pub enum Sign {
 pub struct Tile {
     row: u8,
     column: u8,
-}
+} // this struct is also stored on Solana
 
-#[error_code]
+#[error_code] // macro provided by anchor that automates the process of mapping these custom errors to error codes. This attribute will create an 'impl ErrorCode for TicTacToeError' block where each variant is assigned a unique error code
 pub enum TicTacToeError {
     TileOutOfBounds,
     TileAlreadySet,
@@ -74,27 +81,36 @@ pub enum TicTacToeError {
     GameAlreadyStarted,
 }
 
-impl Game {
+impl Game { // to define methods on the struct Game
     pub const MAXIMUM_SIZE: usize = (32 * 2) + 1 + (9 * (1 + 1)) + (32 + 1);
 
-    pub fn start(&mut self, players: [Pubkey; 2]) -> Result<()> {
-        require_eq!(self.turn, 0, TicTacToeError::GameAlreadyStarted);
-        self.players = players;
-        self.turn = 1;
-        Ok(())
+    pub fn setup_game(ctx: Context<SetupGame>, player_two: Pubkey) -> Result<()> {
+        ctx.accounts.game.start([ctx.accounts.player_one.key(), player_two])
     }
+
+    pub fn start(&mut self, players: [Pubkey; 2]) -> Result<()> {
+        require_eq!(self.turn, 0, TicTacToeError::GameAlreadyStarted); // checks that game has been started yet
+        self.players = players; // sets the 'players' field to the 2 players who will be playing the game
+        self.turn = 1; // indicates that it is the first player's turn
+        Ok(()) // returns a success value
+    } 
+    /// starts a new game and sets up initial state require_eq! is a rust macro that ensure that two values are equal.
+    /// In this case, the macro is checking to make sure that the turn field is equal to 0. Otherwise return an error.
+    /// 
 
     pub fn is_active(&self) -> bool {
         self.state == GameState::Active
     }
+    /// checks if a game is active
+    /// self is a reference to the Game struct that the function is being called on
 
     fn current_player_index(&self) -> usize {
         ((self.turn - 1) % 2) as usize
-    }
+    } // returns the index of the current player to decide whose turn it is
 
     pub fn current_player(&self) -> Pubkey {
         self.players[self.current_player_index()]
-    }
+    } // return public key of the current player
 
     pub fn play(&mut self, tile: &Tile) -> Result<()> {
         require!(self.is_active(), TicTacToeError::GameAlreadyOver);
